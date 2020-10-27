@@ -122,9 +122,9 @@
       ")" 'smart-closing-parenthesis)
 ;; (define-key! evil-insert-state-map ")" 'smart-closing-parenthesis)
 
-(add-to-list 'company-backends #'company-tabnine)
+;; (add-to-list 'company-backends #'company-tabnine)
 ;; Default value: company-capf
-(setq +lsp-company-backends '(company-tabnine company-capf))
+;; (setq +lsp-company-backends '(company-tabnine company-capf))
 
 (setq company-idle-delay 0)
 (setq company-show-numbers t)
@@ -155,12 +155,12 @@
 
 (setq magit-revision-show-gravatars '("^Author:     " . "^Commit:     "))
 
-(lsp-register-client
- (make-lsp-client
-  :new-connection (lsp-stdio-connection "/usr/bin/fsharp-language-server")
-  :major-modes '(fsharp-mode)
-  :server-id 'fsharp-lsp
-  :notification-handlers (ht ("fsharp/startProgress" #'ignore)
-                             ("fsharp/incrementProgress" #'ignore)
-                             ("fsharp/endProgress" #'ignore))
-  :priority 1))
+;; (lsp-register-client
+;;  (make-lsp-client
+;;   :new-connection (lsp-stdio-connection "/usr/bin/fsharp-language-server")
+;;   :major-modes '(fsharp-mode)
+;;   :server-id 'fsharp-lsp
+;;   :notification-handlers (ht ("fsharp/startProgress" #'ignore)
+;;                              ("fsharp/incrementProgress" #'ignore)
+;;                              ("fsharp/endProgress" #'ignore))
+;;   :priority 1))
