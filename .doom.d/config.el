@@ -126,8 +126,9 @@
 ;; Default value: company-capf
 ;; (setq +lsp-company-backends '(company-tabnine company-capf))
 
-(setq company-idle-delay 0)
-(setq company-show-numbers t)
+(after! company
+  (setq company-idle-delay 0)
+  (setq company-show-numbers t))
 
 (setq lsp-csharp-server-path "/opt/omnisharp-roslyn-stdio/OmniSharp.exe")
 
@@ -144,23 +145,25 @@
 ;; Counsel-dash
 (setq-default dash-docs-docsets-path "~/.local/share/Zeal/Zeal/docsets/")
 (setq-default dash-docs-browser-func 'browse-url)
-(add-hook 'emacs-lisp-mode-hook (lambda () (setq-local dash-docs-docsets '("Emacs_Lisp"))))
-(add-hook 'csharp-mode-hook (lambda () (setq-local dash-docs-docsets '("NET_Framework" "Unity_3D"))))
-(add-hook 'rustic-mode-hook (lambda () (setq-local dash-docs-docsets '("Rust"))))
+(setq-hook! 'emacs-lisp-mode-hook  dash-docs-docsets '("Emacs_Lisp"))
+(setq-hook! 'csharp-mode-hook  dash-docs-docsets '("NET_Framework" "Unity_3D"))
+(setq-hook! 'rustic-mode-hook  dash-docs-docsets '("Rust"))
 
 ;; (require 'dap-gdb-lldb)
 ;; (require 'dap-lldb)
 ;; (setq dap-lldb-debug-program '("/usr/bin/lldb-vscode"))
 ;; (setq dap-lldb-debugged-program-function (lambda () (concatenate 'string (projectile-project-root) "target/debug/" (projectile-project-name))))
 
-(setq magit-revision-show-gravatars '("^Author:     " . "^Commit:     "))
+(after! magit
+  (setq magit-revision-show-gravatars '("^Author:     " . "^Commit:     ")))
 
-;; (lsp-register-client
-;;  (make-lsp-client
-;;   :new-connection (lsp-stdio-connection "/usr/bin/fsharp-language-server")
-;;   :major-modes '(fsharp-mode)
-;;   :server-id 'fsharp-lsp
-;;   :notification-handlers (ht ("fsharp/startProgress" #'ignore)
-;;                              ("fsharp/incrementProgress" #'ignore)
-;;                              ("fsharp/endProgress" #'ignore))
-;;   :priority 1))
+;; (after! eglot (add-to-list 'eglot-server-programs '((js-mode typescript-mode) "typescript-language-server" "--stdio")))
+(setq-hook! 'rustic-mode-hook company-idle-delay nil)
+
+(after! flycheck
+  (require 'flycheck-xo)
+  (flycheck-xo-setup))
+(after! lsp-mode
+  (setq lsp-enable-file-watchers nil))
+(after! lsp-rust
+  (setq lsp-rust-analyzer-cargo-watch-command "clippy"))

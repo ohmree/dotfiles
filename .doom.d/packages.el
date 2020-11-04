@@ -62,3 +62,6 @@
 
 ;; (package! realgud-lldb)
 (package! meson-mode)
+
+(package! flycheck-xo
+ :recipe (:host github :repo "alexmurray/flycheck-xo"))

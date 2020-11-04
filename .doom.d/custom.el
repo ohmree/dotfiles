@@ -8,7 +8,13 @@
    '((eval setq inferior-lisp-program
            (concat
             (projectile-project-root)
-            "/run-repl")))))
+            "/run-repl"))))
+ '(sql-connection-alist
+   '(("Default"
+      (sql-product 'postgres)
+      (sql-user "ohmree")
+      (sql-database "learning")
+      (sql-server "localhost")))))
 (custom-set-faces
  ;; custom-set-faces was added by Custom.
  ;; If you edit it by hand, you could mess it up, so be careful.
