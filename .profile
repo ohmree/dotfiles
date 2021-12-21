@@ -1,6 +1,10 @@
-export PATH="$HOME/.emacs.d/bin:$HOME/.cargo/bin:$HOME/.yarn/bin:$PATH"
-export EDITOR="emacsclient -qc -nw -a=''"
-export GUI_EDITOR="emacsclient -nqc -a=''"
-export VISUAL="${EDITOR}"
-export MANPAGER="dash -c 'col -bx | bat -l man -p'"
+export PATH="$HOME/.emacs.d/bin:$HOME/.local/bin:$HOME/.rakubrew/versions/moar-/bin:$HOME/.cargo/bin:$HOME/.yarn/bin:$PATH:$HOME/.deno/bin:$PATH"
+export EDITOR='emacsclient -q -nw -a=""'
+export VISUAL="$EDITOR"
+export MANPAGER="sh -c 'col -bx | bat -l man -p'"
 export LESS='-R'
+export DIFFPROG='delta'
+export SSH_ASKPASS='ksshaskpass'
+export PINENTRY='pinentry-qt'
+export NNN_PLUG=';:preview-tui'
+export RIPGREP_CONFIG_PATH="$HOME/.config/ripgreprc"

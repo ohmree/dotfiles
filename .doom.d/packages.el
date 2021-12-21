@@ -49,19 +49,51 @@
 ;; ...Or *all* packages (NOT RECOMMENDED; will likely break things)
 ;(unpin! t)
 
-(package! sly-named-readtables)
-(package! sly-quicklisp)
-(package! sly-asdf)
-(package! gnu-apl-mode)
-(package! company-tabnine)
+; (package! sly-named-readtables)
+;; (package! sly-package-inferred :recipe (:host github :repo "40ants/sly-package-inferred"))
+;; (package! sly-quicklisp)
+;; (package! sly-asdf)
+; (package! gnu-apl-mode)
+; (package! company-tabnine)
 (package! pkgbuild-mode)
-(package! counsel-dash)
 
 ;; https://luca.cambiaghi.me/doom-gccemacs
-(unpin! dap-mode lsp-mode treemacs)
+; (unpin! dap-mode lsp-mode treemacs)
 
 ;; (package! realgud-lldb)
-(package! meson-mode)
+; (package! meson-mode)
 
-(package! flycheck-xo
- :recipe (:host github :repo "alexmurray/flycheck-xo"))
+;; (package! flycheck-xo
+;;  :recipe (:host github :repo "alexmurray/flycheck-xo"))
+
+(package! magit-delta)
+(package! keychain-environment)
+
+;; (package! floobits
+;;   :recipe (:host github :repo "ohmree/floobits-emacs"))
+
+; (package! rust-playground)
+
+; (package! keycast)
+; (package! gif-screencast)
+
+(package! elcord)
+
+; (package! keypression)
+
+; (package! ox-moderncv :recipe (:host gitlab :repo "Titan-C/org-cv" :branch "master"))
+;; (package! format-all :recipe (:local-repo "./emacs-format-all-the-code"))
+(package! parrot :recipe (:host github :repo "ohmree/parrot" :branch "master" :files (:defaults "img")))
+; (package! request)
+; (package! oauth2-request)
+
+(package! lsp-toml :recipe (:host github :repo "buzztaiki/lsp-toml.el" :branch "main"))
+(package! quickrun :recipe (:type git :flavor melpa :host github :repo "ohmree/quickrun"))
+(package! crdt)
+;; (package! symex)
+;; (package! vue-mode)
+(package! lsp-volar :recipe (:host github :repo "jadestrong/lsp-volar"))
+(package! vterm :recipe
+  (:host github
+   :repo "blahgeek/emacs-libvterm"
+   :branch "fix-visibility"))

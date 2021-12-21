@@ -57,3 +57,13 @@ flycheck_*.el
 
 # Fish universal variables
 .config/fish/fish_variables
+
+# Personal secrets
+.secrets/
+
+# Floobits stuff
+.floorc.json
+
+# Emacs auth sources
+.authinfo
+.authinfo.gpg
