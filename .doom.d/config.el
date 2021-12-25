@@ -3,14 +3,42 @@
 ;; Place your private configuration here! Remember, you do not need to run 'doom
 ;; sync' after modifying this file!
 
-(use-package! elcord)
+(use-package! elcord
+  :config
+  (elcord-mode)
+  (setq elcord-buffer-details-format-function
+        (lambda ()
+          "Return the buffer details string shown on discord, with a few tweaks."
+          (pcase (buffer-name)
+            ("*ielm*" "Inside IELM")
+            ("*info*" "Reading info")
+            ((rx "*Man" whitespace
+                 (let section (one-or-more not-newline)) whitespace
+                 (let name (one-or-more not-newline)) ?*)
+             (format "Reading manpage for %s(%s)" name section))
+            ((rx "*doom:vterm-popup:"
+                 (let name (one-or-more not-newline))
+                 ?*)
+             (format "Inside terminal: %s" name))
+            ((rx "*helpful "
+                 (let subject (one-or-more not-newline))
+                 ": "
+                 (let name (one-or-more not-newline))
+                 ?*)
+             (format "Reading help for a %s `%s'" subject name))
+            (_ (elcord-buffer-details-format)))))
+  (add-to-list 'elcord-boring-buffers-regexp-list "\\*doom\\*"))
 
-(keychain-refresh-environment)
+
+(use-package! keychain-environment
+  :config
+ (keychain-refresh-environment))
+
 
 ;; TODO: fix this
 ;; Some functionality uses this to identify you, e.g. GPG configuration, email
 ;; clients, file templates and snippets.
-(setq! user-full-name "me :)")
+(setq user-full-name "me :)")
 
 ;; Doom exposes five (optional) variables for controlling fonts in Doom. Here
 ;; are the three important ones:
@@ -22,21 +50,18 @@
 ;;
 ;; They all accept either a font-spec, font string ("Input Mono-12"), or xlfd
 ;; font string. You generally only need these two:
-(setq! doom-font (font-spec :family "Fira Code" :size 16 :weight 'normal)
-       doom-variable-pitch-font (font-spec :family "sans" :size 16 :weight 'normal)
-       doom-unicode-font (font-spec :family "Noto Color Emoji"))
-
-;; (set-fontset-font t 'hebrew "Noto Sans Hebrew")
-;; (set-fontset-font t 'hebrew (font-spec :script 'hebrew) nil 'append)
+(setq doom-font (font-spec :family "JetBrains Mono" :size 16)
+      doom-variable-pitch-font (font-spec :family "SF Pro Display")
+      doom-unicode-font (font-spec :family "Noto Sans Hebrew"))
 
 ;; There are two ways to load a theme. Both assume the theme is installed and
 ;; available. You can either set `doom-theme' or manually load a theme with the
 ;; `load-theme' function. This is the default:
-(setq! doom-theme 'doom-one)
+(setq doom-theme 'doom-one)
 
 ;; If you use `org' and don't want your org files in the default location below,
 ;; change `org-directory'. It must be set before org loads!
-(setq! org-directory "~/org/")
+(setq org-directory "~/org/")
 
 ;; This determines the style of line numbers in effect. If set to `nil', line
 ;; numbers are disabled. For relative line numbers, set this to `relative'.
@@ -120,31 +145,25 @@
     :no "e" #'next-error)
    (:prefix "["
     :no "e" #'previous-error))
-  (setq-default sly-lisp-implementations
-                `((cmu ("clpm" "bundle" "exec" "--with-client" "cmucl"))
-                  (sbcl ("clpm" "bundle" "exec" "--with-client" "sbcl"))
-                  (abcl ("clpm" "bundle" "exec" "--with-client" "abcl"))
-                  (ccl ("clpm" "bundle" "exec" "--with-client" "ccl"))
-                  (ecl ("clpm" "bundle" "exec" "--with-client" "ecl"))
-                  ;; (eql5 ("clpm" "bundle" "exec" "--with-client" ,(expand-file-name (concat doom-private-dir "eql5-slime.sh"))))
-                  ;; (eql5 ("eql5"))
-                  ))
-  (setq-default sly-default-lisp 'sbcl))
+  (setq sly-lisp-implementations
+        `((cmu ("clpm" "bundle" "exec" "--with-client" "cmucl"))
+          (sbcl ("clpm" "bundle" "exec" "--with-client" "sbcl"))
+          (abcl ("clpm" "bundle" "exec" "--with-client" "abcl"))
+          (ccl ("clpm" "bundle" "exec" "--with-client" "ccl"))
+          (ecl ("clpm" "bundle" "exec" "--with-client" "ecl"))))
+        ;; (eql5 ("clpm" "bundle" "exec" "--with-client" ,(expand-file-name (concat doom-private-dir "eql5-slime.sh"))))
+        ;; (eql5 ("eql5"))
+  (setq sly-default-lisp 'sbcl))
 
 
 (after! company
-  ;; (setq! company-idle-delay 0)
   (setq! company-show-numbers t))
 
-;; (setq! lsp-csharp-server-path "/opt/omnisharp-roslyn-stdio/OmniSharp.exe")
-
-;; (setq! comp-deferred-compilation t)
-
 ;; We need this fix for some reason
-(unless (fboundp 'cc-bytecomp-is-compiling)
-  (defsubst cc-bytecomp-is-compiling ()
-    "Return non-nil if eval'ed during compilation."
-    (eq (cc-bytecomp-compiling-or-loading) 'compiling)))
+;; (unless (fboundp 'cc-bytecomp-is-compiling)
+;;   (defsubst cc-bytecomp-is-compiling ()
+;;     "Return non-nil if eval'ed during compilation."
+;;     (eq (cc-bytecomp-compiling-or-loading) 'compiling)))
 
 (setq-default fill-column 120)
 
@@ -162,20 +181,10 @@
 (after! magit
   (setq! magit-revision-show-gravatars '("^Author:     " . "^Commit:     ")))
 
-;; (after! eglot (add-to-list 'eglot-server-programs '((js-mode typescript-mode) "typescript-language-server" "--stdio")))
-;; (setq-hook! 'rustic-mode-hook company-idle-delay nil)
-
-;; (after! flycheck
-;; (require 'flycheck-xo)
-;;   (flycheck-xo-setup))
 (after! lsp-mode
-  ;; (setq! lsp-enable-file-watchers nil)
-
-  (add-hook! 'hack-local-variables-hook
-    (when (derived-mode-p 'typescript-mode) (lsp)))
-  (setq! lsp-elixir-server-command '("/usr/bin/elixir-ls")))
-
-;; (require 'lsp-toml)
+  ;; (add-hook! 'hack-local-variables-hook
+  ;;   (when (derived-mode-p 'typescript-mode) (lsp)))
+  (setq lsp-elixir-server-command '("/usr/bin/elixir-ls")))
 
 (use-package! lsp-toml
   :config (setq! lsp-toml-schema-links t)
@@ -185,25 +194,13 @@
   (add-to-list 'lsp-css-experimental-custom-data (concat doom-private-dir "postcss.css-data.json")))
 
 (after! lsp-rust
-  (setq! lsp-rust-analyzer-cargo-watch-command "clippy")
-  (setq! lsp-rust-analyzer-experimental-proc-attr-macros t)
-  (setq! lsp-rust-analyzer-proc-macro-enable t)
-  (setq! lsp-rust-target-dir "/tmp/lsp-rust-target"))
+  (setq lsp-rust-analyzer-cargo-watch-command "clippy"
+        lsp-rust-analyzer-experimental-proc-attr-macros t
+        lsp-rust-analyzer-proc-macro-enable t
+        lsp-rust-target-dir "/tmp/lsp-rust-target"))
 
-(after! magic
+(after! magit
   (add-hook! magit-mode-hook #'(lambda () (magit-delta-mode +1))))
-
-(after! counsel-dash
-  (setq! counsel-dash-docsets-path "~/.local/share/Zeal/Zeal/docsets"))
-
-(setq! +lookup-open-url-fn #'+lookup-xwidget-webkit-open-url-fn)
-
-;; (setq! lsp-clients-lua-language-server-command '("/usr/bin/lua-language-server" ""))
-;; (setq! lsp-clients-lua-language-server-install-dir "/usr/share/lua-language-server/")
-;; (setq! lsp-clients-lua-language-server-bin "/usr/lib/lua-language-server/lua-language-server")
-;; (setq! lsp-clients-lua-languag
-;; e-server-args nil)
-;; (setq! lsp-clients-lua-language-server-main-location nil)
 
 ;; (after! ccls
 ;;   (setq! ccls-initialization-options '(:index (:comments 2 :onChange t :trackDependency 2) :completion (:detailedLabel t)))
@@ -217,81 +214,55 @@
                                 "--header-insertion-decorators=0"))
 (after! lsp-clangd (set-lsp-priority! 'clangd 2))
 (after! lsp-lua
-  (setq! lsp-clients-lua-language-server-install-dir "/usr/lib/lua-language-server"
-         lsp-clients-lua-language-server-bin "/usr/bin/lua-language-server"
-         lsp-clients-lua-language-server-main-location "/usr/lib/lua-language-server/main.lua"))
+  (setq lsp-clients-lua-language-server-install-dir "/usr/lib/lua-language-server"
+        lsp-clients-lua-language-server-bin "/usr/bin/lua-language-server"
+        lsp-clients-lua-language-server-main-location "/usr/lib/lua-language-server/main.lua"))
 
 (custom-set-faces!
   '(aw-leading-char-face
     :foreground "white" :background "red"
     :weight bold :height 2.5 :box (:line-width 10 :color "red")))
 
-(defun load-environment-secrets-from-file (file)
-  "Load secrets from a shell profile file in the format `export MY_SECRET=123abc...` into the current environment"
-  (let* ((context (epg-make-context 'OpenPGP))
-         (file-contents
-          (decode-coding-string
-           (epg-decrypt-file context file nil)
-           'utf-8))
-         (declarations (split-string file-contents "\n" t)))
-    (dolist (declaration declarations)
-      (when (string-match "export \\([_[:alnum:]]+\\)=\\(.+\\)" declaration)
-        (setenv (match-string 1 declaration) (match-string 2 declaration))))))
+;; (defun load-environment-secrets-from-file (file)
+;;   "Load secrets from a shell profile file in the format `export MY_SECRET=123abc...` into the current environment"
+;;   (let* ((context (epg-make-context 'OpenPGP))
+;;          (file-contents
+;;           (decode-coding-string
+;;            (epg-decrypt-file context file nil)
+;;            'utf-8))
+;;          (declarations (split-string file-contents "\n" t)))
+;;     (dolist (declaration declarations)
+;;       (when (string-match "export \\([_[:alnum:]]+\\)=\\(.+\\)" declaration)
+;;         (setenv (match-string 1 declaration) (match-string 2 declaration))))))
 
 ;; (dolist (file (file-expand-wildcards (concat (getenv "HOME") "/.secrets/*")))
 ;;   (load-environment-secrets-from-file file))
 
-(setq! fuel-factor-root-dir "/usr/lib/factor")
-(elcord-mode)
+(after! fuel-mode
+ (setq fuel-factor-root-dir "/usr/lib/factor"))
 
-(defun my-elcord-buffer-details-format ()
-  "Return the buffer details string shown on discord, with a few tweaks."
-  (pcase (buffer-name)
-    ("*ielm*" "Inside IELM")
-    ("*info*" "Reading info")
-    ((rx "*Man" whitespace
-         (let section (one-or-more not-newline)) whitespace
-         (let name (one-or-more not-newline)) ?*)
-     (format "Reading manpage for %s(%s)" name section))
-    ((rx "*doom:vterm-popup:"
-         (let name (one-or-more not-newline))
-         ?*)
-     (format "Inside terminal: %s" name))
-    ((rx "*helpful "
-         (let subject (one-or-more not-newline))
-         ": "
-         (let name (one-or-more not-newline))
-         ?*)
-     (format "Reading help for a %s `%s'" subject name))
-    (_ (elcord-buffer-details-format))))
 
-(setq! elcord-buffer-details-format-function #'my-elcord-buffer-details-format)
-(add-to-list 'elcord-boring-buffers-regexp-list "\\*doom\\*")
 
 (setq-default enable-local-variables t)
 
 (after! org
-  (setq! org-use-property-inheritance t)
-  (setq! org-latex-compiler "lualatex")
+  (setq org-use-property-inheritance t
+        org-latex-compiler "lualatex"))
   ; (use-package! ox-moderncv
   ;   :init (require 'ox-moderncv))
-  )
+  
 
-(after! web-mode
-  (define-derived-mode marko-mode web-mode "marko")
-  (add-to-list 'auto-mode-alist '("\\.marko\\'" . marko-mode))
-  (after! lsp-mode
-    (add-to-list 'lsp-language-id-configuration '(marko-mode . "marko"))
-    (lsp-register-client
-     (make-lsp-client :new-connection (lsp-stdio-connection '("marko-language-server" "--stdio"))
-                      :activation-fn (lsp-activate-on "marko")
-                      :server-id 'marko-language-server))))
+;; (after! lsp-mode
+;;   (add-to-list 'lsp-language-id-configuration '(marko-mode . "marko"))
+;;   (lsp-register-client
+;;    (make-lsp-client :new-connection (lsp-stdio-connection '("marko-language-server" "--stdio"))
+;;                     :activation-fn (lsp-activate-on "marko")
+;;                     :server-id 'marko-language-server)))
 
 (after! iedit
   (map! "C-:" 'iedit-mode))
 
 (use-package! parrot
-  :after rotate-text
   :config
   (defadvice! trigger-parrot (&rest _)
     :after-while #'rotate-text
@@ -324,10 +295,36 @@
 ;;   ;;       :ni "<escape>" #'symex-mode-interface)
 ;;   )
 
-(setq-hook! 'typescript-mode-hook +format-with-lsp nil)
-;; (add-hook 'vue-mode-hook #'lsp!)
+;; (setq-hook! 'typescript-mode-hook +format-with-lsp nil)
 ;; TODO: lazy load this
 (use-package! lsp-volar)
 
 
-(set-docsets! 'c++-mode :add "Qt_5")
+(after! cc-mode
+ (set-docsets! 'c++-mode :add "Qt_5"))
+
+
+(use-package! pacfiles-mode)
+
+; (after! vertico
+;   (use-package! vertico-posframe
+;     :config
+;     (vertico-posframe-mode 1)
+;     (add-hook 'vertico-posframe-mode-hook
+;               (lambda () (solaire-mode +1)))
+;     (setq! vertico-posframe-min-width
+;            90
+;            vertico-posframe-min-height
+;            vertico-count)))
+            ;; vertico-posframe-parameters
+            ;; `((background-color . ,(doom-color 'bg-alt))))))
+
+(after! fish-mode
+  (set-company-backend! 'fish-mode 'company-fish-shell 'company-yasnippet))
+
+(after! emojify
+  (setq! emojify-display-style 'unicode))
+
+(after! highlight-indent-guides
+  (setq highlight-indent-guides-method 'character
+        highlight-indent-guides-responsive 'stack))

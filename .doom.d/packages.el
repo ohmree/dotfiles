@@ -88,12 +88,15 @@
 ; (package! oauth2-request)
 
 (package! lsp-toml :recipe (:host github :repo "buzztaiki/lsp-toml.el" :branch "main"))
-(package! quickrun :recipe (:type git :flavor melpa :host github :repo "ohmree/quickrun"))
+;; (package! quickrun :recipe (:type git :flavor melpa :host github :repo "ohmree/quickrun"))
 (package! crdt)
 ;; (package! symex)
 ;; (package! vue-mode)
 (package! lsp-volar :recipe (:host github :repo "jadestrong/lsp-volar"))
-(package! vterm :recipe
-  (:host github
-   :repo "blahgeek/emacs-libvterm"
-   :branch "fix-visibility"))
+;; (package! vterm :recipe
+;;   (:host github
+;;    :repo "blahgeek/emacs-libvterm"
+;;    :branch "fix-visibility"))
+
+(package! pacfiles-mode)
+(package! vertico-posframe :recipe (:host github :repo "tumashu/vertico-posframe" :branch "main"))
