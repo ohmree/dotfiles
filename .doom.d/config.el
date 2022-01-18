@@ -5,29 +5,36 @@
 
 (use-package! elcord
   :config
-  (elcord-mode)
-  (setq elcord-buffer-details-format-function
-        (lambda ()
-          "Return the buffer details string shown on discord, with a few tweaks."
-          (pcase (buffer-name)
-            ("*ielm*" "Inside IELM")
-            ("*info*" "Reading info")
-            ((rx "*Man" whitespace
-                 (let section (one-or-more not-newline)) whitespace
-                 (let name (one-or-more not-newline)) ?*)
-             (format "Reading manpage for %s(%s)" name section))
-            ((rx "*doom:vterm-popup:"
-                 (let name (one-or-more not-newline))
-                 ?*)
-             (format "Inside terminal: %s" name))
-            ((rx "*helpful "
-                 (let subject (one-or-more not-newline))
-                 ": "
-                 (let name (one-or-more not-newline))
-                 ?*)
-             (format "Reading help for a %s `%s'" subject name))
-            (_ (elcord-buffer-details-format)))))
-  (add-to-list 'elcord-boring-buffers-regexp-list "\\*doom\\*"))
+  (setq
+   elcord-buffer-details-format-function
+   (lambda ()
+     "Return the buffer details string shown on discord, with a few tweaks."
+     (pcase (buffer-name
+             ("*ielm*" "Inside IELM")
+             ("*info*" "Reading info")
+             ((rx "*Man" whitespace
+                  (let section (one-or-more not-newline)) whitespace
+                  (let name (one-or-more not-newline)) ?*)
+              (format "Reading manpage for %s(%s)" name section))
+             ((rx "*doom:vterm-popup:"
+                  (let name (one-or-more not-newline))
+                  ?*)
+              (format "Inside terminal: %s" name))
+             ("*lsp-help* "
+              "Reading help")
+             ((rx "*helpful "
+                  (let subject (one-or-more not-newline))
+                  ": "
+                  (let name (one-or-more not-newline))
+                  ?*)
+              (format "Reading help for a %s `%s'" subject name))
+
+             (_ (elcord-buffer-details-format)))
+       (add-to-list 'elcord-boring-buffers-regexp-list "\\*doom\\*")
+       (elcord-mode)))))
+
+(use-package! pkgbuild-mode
+  :mode "/PKGBUILD\\'")
 
 
 (use-package! keychain-environment
@@ -65,7 +72,7 @@
 
 ;; This determines the style of line numbers in effect. If set to `nil', line
 ;; numbers are disabled. For relative line numbers, set this to `relative'.
-(setq! display-line-numbers-type 'relative)
+(setq display-line-numbers-type 'relative)
 
 
 ;; Here are some additional functions/macros that could help you configure Doom:
@@ -156,8 +163,7 @@
   (setq sly-default-lisp 'sbcl))
 
 
-(after! company
-  (setq! company-show-numbers t))
+  ;; (setq company-show-numbers t)
 
 ;; We need this fix for some reason
 ;; (unless (fboundp 'cc-bytecomp-is-compiling)
@@ -167,28 +173,37 @@
 
 (setq-default fill-column 120)
 
-(setq +lookup-open-url-fn #'eww)
+;; (setq +lookup-open-url-fn #'eww)
 
 (after! dash-docs
   (setq dash-docs-docsets-path "~/.local/share/Zeal/Zeal/docsets/"
         dash-docs-browser-func #'eww))
 
-;; (require 'dap-gdb-lldb)
-;; (require 'dap-lldb)
-;; (setq! dap-lldb-debug-program '("/usr/bin/lldb-vscode"))
-;; (setq! dap-lldb-debugged-program-function (lambda () (concatenate 'string (projectile-project-root) "target/debug/" (projectile-project-name))))
-
 (after! magit
-  (setq! magit-revision-show-gravatars '("^Author:     " . "^Commit:     ")))
+  ;; (setq magit-revision-show-gravatars '("^Author:     " . "^Commit:     "))
+  (setq magit-revision-show-gravatars t))
+
+;; (use-package! magit-delta
+;;   :after magit
+;;   :hook (magit-mode . magit-delta-mode))
+
+ 
 
 (after! lsp-mode
-  ;; (add-hook! 'hack-local-variables-hook
-  ;;   (when (derived-mode-p 'typescript-mode) (lsp)))
+  (setq lsp-enable-folding t
+        lsp-enable-text-document-color t
+        lsp-headerline-breadcrumb-enable t
+        ;; TODO: figure out if we need this with tree-sitter
+        lsp-semantic-tokens-enable nil))
+(after! lsp-headerline
+  (setq lsp-headerline-breadcrumb-segments '(symbols)))
+(after! lsp-elixir
   (setq lsp-elixir-server-command '("/usr/bin/elixir-ls")))
+(after! lsp-treemacs
+  (add-hook 'lsp-treemacs-generic-mode-hook #'lsp-treemacs-sync-mode))
 
-(use-package! lsp-toml
-  :config (setq! lsp-toml-schema-links t)
-  :after-call conf-toml-mode-hook)
+(after! lsp-toml
+  (setq lsp-toml-schema-links t))
 
 (after! lsp-css
   (add-to-list 'lsp-css-experimental-custom-data (concat doom-private-dir "postcss.css-data.json")))
@@ -197,22 +212,27 @@
   (setq lsp-rust-analyzer-cargo-watch-command "clippy"
         lsp-rust-analyzer-experimental-proc-attr-macros t
         lsp-rust-analyzer-proc-macro-enable t
+        lsp-rust-analyzer-server-display-inlay-hints t
+        lsp-rust-analyzer-display-parameter-hints t
+        lsp-rust-analyzer-display-chaining-hints t
         lsp-rust-target-dir "/tmp/lsp-rust-target"))
 
-(after! magit
-  (add-hook! magit-mode-hook #'(lambda () (magit-delta-mode +1))))
+(after! rustic
+  (add-hook 'rustic-mode-hook #'lsp-rust-analyzer-inlay-hints-mode))
+
 
 ;; (after! ccls
 ;;   (setq! ccls-initialization-options '(:index (:comments 2 :onChange t :trackDependency 2) :completion (:detailedLabel t)))
 ;;   (set-lsp-priority! 'ccls 2)) ; optional as ccls is the default in Doom
 
-(setq lsp-clients-clangd-args '("-j=3"
-                                "--background-index"
-                                "--clang-tidy"
-                                "--completion-style=detailed"
-                                "--header-insertion=never"
-                                "--header-insertion-decorators=0"))
-(after! lsp-clangd (set-lsp-priority! 'clangd 2))
+(after! lsp-clangd
+  (setq lsp-clients-clangd-args '("-j=3"
+                                  "--background-index"
+                                  "--clang-tidy"
+                                  "--completion-style=detailed"
+                                  "--header-insertion=never"
+                                  "--header-insertion-decorators=0"))
+  (set-lsp-priority! 'clangd 2))
 (after! lsp-lua
   (setq lsp-clients-lua-language-server-install-dir "/usr/lib/lua-language-server"
         lsp-clients-lua-language-server-bin "/usr/bin/lua-language-server"
@@ -239,17 +259,17 @@
 ;;   (load-environment-secrets-from-file file))
 
 (after! fuel-mode
- (setq fuel-factor-root-dir "/usr/lib/factor"))
+  (setq fuel-factor-root-dir "/usr/lib/factor"))
 
-
-
-(setq-default enable-local-variables t)
+(setq enable-local-variables t)
 
 (after! org
-  (setq org-use-property-inheritance t
-        org-latex-compiler "lualatex"))
-  ; (use-package! ox-moderncv
-  ;   :init (require 'ox-moderncv))
+  (setq org-use-property-inheritance t))
+
+(after! ox-latex
+  (setq org-latex-compiler "lualatex"))
+
+;; (use-package! ox-moderncv)
   
 
 ;; (after! lsp-mode
@@ -262,19 +282,22 @@
 (after! iedit
   (map! "C-:" 'iedit-mode))
 
-(use-package! parrot
-  :config
-  (defadvice! trigger-parrot (&rest _)
-    :after-while #'rotate-text
-    :after-while #'rotate-text-backward
-    (parrot-start-animation))
-  (parrot-mode))
+(quiet!
+ (use-package! parrot
+   :config
+   (defadvice! trigger-parrot (&rest _)
+     :after-while #'rotate-text
+     :after-while #'rotate-text-backward
+     (parrot-start-animation))
+   (parrot-set-parrot-type 'bat)
+   (parrot-mode)))
 
 (after! raku-mode
-  (defun run-raku-return-buffer ()
-    (interactive)
-    (window-buffer (run-raku)))
-  (set-repl-handler! 'raku-mode #'run-raku-return-buffer))
+  (set-repl-handler!
+    'raku-mode
+    (lambda ()
+      (interactive)
+      (window-buffer (run-raku)))))
 
 ;; (use-package! symex
 ;;   :config
@@ -296,35 +319,83 @@
 ;;   )
 
 ;; (setq-hook! 'typescript-mode-hook +format-with-lsp nil)
-;; TODO: lazy load this
-(use-package! lsp-volar)
-
+(use-package! lsp-volar
+  :config
+  (setq lsp-volar-typescript-suggest-auto-imports t
+        lsp-volar-take-over-mode nil))
 
 (after! cc-mode
- (set-docsets! 'c++-mode :add "Qt_5"))
+  (set-docsets! 'c++-mode :add "Qt_5"))
 
 
 (use-package! pacfiles-mode)
 
-; (after! vertico
-;   (use-package! vertico-posframe
-;     :config
-;     (vertico-posframe-mode 1)
-;     (add-hook 'vertico-posframe-mode-hook
-;               (lambda () (solaire-mode +1)))
-;     (setq! vertico-posframe-min-width
-;            90
-;            vertico-posframe-min-height
-;            vertico-count)))
-            ;; vertico-posframe-parameters
-            ;; `((background-color . ,(doom-color 'bg-alt))))))
+;; (use-package! vertico-posframe
+;;   :after vertico
+;;   :config
+;;   (setq vertico-posframe-width 120
+;;         ;; vertico-posframe-min-width 90
+;;         vertico-posframe-border-width 0
+;;         vertico-posframe-min-height vertico-count
+;;         ;; vertico-posframe-height vertico-count
+;;         vertico-posframe-poshandler #'posframe-poshandler-frame-top-center)
+;;   (vertico-posframe-mode))
+  ;; (add-hook 'vertico-posframe-mode-hook #'solaire-mode-fix-minibuffer)
+
+
+;; vertico-posframe-parameters
+;; `((background-color . ,(doom-color 'bg-alt))))))
 
 (after! fish-mode
   (set-company-backend! 'fish-mode 'company-fish-shell 'company-yasnippet))
 
 (after! emojify
-  (setq! emojify-display-style 'unicode))
+  (setq emojify-display-style 'unicode))
 
 (after! highlight-indent-guides
   (setq highlight-indent-guides-method 'character
         highlight-indent-guides-responsive 'stack))
+
+(setq +treemacs-git-mode 'deferred)
+
+(after! doom-themes-ext-treemacs
+  (setq doom-themes-treemacs-theme "doom-colors"))
+
+(after! web-mode
+  (setq web-mode-enable-comment-annotation t))
+  ;; (add-to-list 'web-mode-comment-formats '("vue"        . "//\n "))
+  ;; (add-to-list 'web-mode-comment-formats '("pug"        . "//\n ")))
+
+;; (after! lsp-javascript
+;;   (set-lsp-priority! 'ts-ls 2))
+(use-package! evil-textobj-tree-sitter
+  :when (featurep! :editor evil)
+  :after tree-sitter
+  :config
+  (map! (:map evil-inner-text-objects-map
+         "f" (evil-textobj-tree-sitter-get-textobj "function.inner")
+         "F" (evil-textobj-tree-sitter-get-textobj "call.inner")
+         "C" (evil-textobj-tree-sitter-get-textobj "class.inner")
+         "i" (evil-textobj-tree-sitter-get-textobj "conditional.inner")
+         "l" (evil-textobj-tree-sitter-get-textobj "loop.inner"))
+        (:map evil-outer-text-objects-map
+         "f" (evil-textobj-tree-sitter-get-textobj "function.outer")
+         "F" (evil-textobj-tree-sitter-get-textobj "call.outer")
+         "C" (evil-textobj-tree-sitter-get-textobj "class.outer")
+         "c" (evil-textobj-tree-sitter-get-textobj "comment.outer")
+         "i" (evil-textobj-tree-sitter-get-textobj "conditional.outer")
+         "l" (evil-textobj-tree-sitter-get-textobj "loop.outer"))))
+
+;;; :app everywhere
+(after! emacs-everywhere
+  (remove-hook 'emacs-everywhere-init-hooks #'hide-mode-line-mode))
+
+  ;; Semi-center it over the target window, rather than at the cursor position
+  ;; (which could be anywhere).
+  ;; (defadvice! center-emacs-everywhere-in-origin-window (frame window-info)
+  ;;   :override #'emacs-everywhere-set-frame-position
+  ;;   (cl-destructuring-bind (x y width height)
+  ;;       (emacs-everywhere-window-geometry window-info)
+  ;;     (set-frame-position frame
+  ;;                         (+ x (/ width 2) (- (/ width 2)))
+  ;;                         (+ y (/ height 2))))))

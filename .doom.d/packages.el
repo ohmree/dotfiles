@@ -54,11 +54,7 @@
 ;; (package! sly-quicklisp)
 ;; (package! sly-asdf)
 ; (package! gnu-apl-mode)
-; (package! company-tabnine)
 (package! pkgbuild-mode)
-
-;; https://luca.cambiaghi.me/doom-gccemacs
-; (unpin! dap-mode lsp-mode treemacs)
 
 ;; (package! realgud-lldb)
 ; (package! meson-mode)
@@ -66,7 +62,7 @@
 ;; (package! flycheck-xo
 ;;  :recipe (:host github :repo "alexmurray/flycheck-xo"))
 
-(package! magit-delta)
+;; (package! magit-delta)
 (package! keychain-environment)
 
 ;; (package! floobits
@@ -82,21 +78,21 @@
 ; (package! keypression)
 
 ; (package! ox-moderncv :recipe (:host gitlab :repo "Titan-C/org-cv" :branch "master"))
-;; (package! format-all :recipe (:local-repo "./emacs-format-all-the-code"))
 (package! parrot :recipe (:host github :repo "ohmree/parrot" :branch "master" :files (:defaults "img")))
-; (package! request)
-; (package! oauth2-request)
 
-(package! lsp-toml :recipe (:host github :repo "buzztaiki/lsp-toml.el" :branch "main"))
-;; (package! quickrun :recipe (:type git :flavor melpa :host github :repo "ohmree/quickrun"))
-(package! crdt)
+;; (package! crdt)
 ;; (package! symex)
-;; (package! vue-mode)
 (package! lsp-volar :recipe (:host github :repo "jadestrong/lsp-volar"))
-;; (package! vterm :recipe
-;;   (:host github
-;;    :repo "blahgeek/emacs-libvterm"
-;;    :branch "fix-visibility"))
+;; (package! vterm
+;;   :pin "a940dd2ee8a82684860e320c0f6d5e15d31d916f")
 
 (package! pacfiles-mode)
-(package! vertico-posframe :recipe (:host github :repo "tumashu/vertico-posframe" :branch "main"))
+;; (package! vertico-posframe :recipe (:host github :repo "tumashu/vertico-posframe" :branch "main"))
+
+(when (and (featurep! :editor evil)
+           (featurep! :ui tree-sitter))
+  (package! evil-textobj-tree-sitter))
+  ;; (package! evil-textobj-tree-sitter
+  ;;   :recipe (:host github
+  ;;            :repo "meain/evil-textobj-tree-sitter"
+  ;;            :files (:defaults "queries")))

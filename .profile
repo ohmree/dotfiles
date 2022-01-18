@@ -2,7 +2,7 @@ export PATH="$HOME/.emacs.d/bin:$HOME/.local/bin:$HOME/.rakubrew/versions/moar-/
 export EDITOR='emacsclient -q -nw -a=""'
 export VISUAL="$EDITOR"
 export MANPAGER="sh -c 'col -bx | bat -l man -p'"
-export LESS='-R'
+export LESS='-RSi'
 export DIFFPROG='delta'
 export SSH_ASKPASS='ksshaskpass'
 export PINENTRY='pinentry-qt'
