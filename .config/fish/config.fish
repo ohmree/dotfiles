@@ -1,8 +1,7 @@
-replay source /etc/profile
-
-# if status is-login
+if status is-login
+    replay source /etc/profile
     test -f ~/.profile && source ~/.profile
-# end
+end
 
 command -q direnv && direnv hook fish | source
 command -q opam && opam env | source

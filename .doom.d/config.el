@@ -9,29 +9,27 @@
    elcord-buffer-details-format-function
    (lambda ()
      "Return the buffer details string shown on discord, with a few tweaks."
-     (pcase (buffer-name
-             ("*ielm*" "Inside IELM")
-             ("*info*" "Reading info")
-             ((rx "*Man" whitespace
-                  (let section (one-or-more not-newline)) whitespace
-                  (let name (one-or-more not-newline)) ?*)
-              (format "Reading manpage for %s(%s)" name section))
-             ((rx "*doom:vterm-popup:"
-                  (let name (one-or-more not-newline))
-                  ?*)
-              (format "Inside terminal: %s" name))
-             ("*lsp-help* "
-              "Reading help")
-             ((rx "*helpful "
-                  (let subject (one-or-more not-newline))
-                  ": "
-                  (let name (one-or-more not-newline))
-                  ?*)
-              (format "Reading help for a %s `%s'" subject name))
-
-             (_ (elcord-buffer-details-format)))
-       (add-to-list 'elcord-boring-buffers-regexp-list "\\*doom\\*")
-       (elcord-mode)))))
+     (pcase (buffer-name)
+       ("*ielm*" "Inside IELM")
+       ("*info*" "Reading info")
+       ("*lsp-help*" "Reading help")
+       ((rx "*Man" whitespace
+            (let section (one-or-more not-newline)) whitespace
+            (let name (one-or-more not-newline)) ?*)
+        (format "Reading manpage for %s(%s)" name section))
+       ((rx "*doom:vterm-popup:"
+            (let name (one-or-more not-newline))
+            ?*)
+        (format "Inside terminal: %s" name))
+       ((rx "*helpful "
+            (let subject (one-or-more not-newline))
+            ": "
+            (let name (one-or-more not-newline))
+            ?*)
+        (format "Reading help for a %s `%s'" subject name))
+       (_ (elcord-buffer-details-format)))))
+  (add-to-list 'elcord-boring-buffers-regexp-list "\\*doom\\*")
+  (elcord-mode))
 
 (use-package! pkgbuild-mode
   :mode "/PKGBUILD\\'")
@@ -39,7 +37,7 @@
 
 (use-package! keychain-environment
   :config
- (keychain-refresh-environment))
+  (keychain-refresh-environment))
 
 
 ;; TODO: fix this
@@ -91,59 +89,8 @@
 ;;
 ;; You can also try 'gd' (or 'C-c c d') to jump to their definition and see how
 ;; they are implemented.
-;; (after! lispy
-;;   (add-to-list 'lispyville-key-theme 'text-objects)
-;;   (add-to-list 'lispyville-key-theme 'additional-motions)
-;;   (add-to-list 'lispyville-key-theme 'commentary)
-;;   (add-to-list 'lispyville-key-theme 'wrap)
-;;   (add-to-list 'lispyville-key-theme 'escape))
 
 (put 'with 'lisp-indent-function 1)
-
-;; (defun sly-qlot-exec (directory)
-;;   (interactive (list (read-directory-name "Project directory: ")))
-;;   (sly-start :program "qlot"
-;;              :program-args '("exec" "--with-client" "ros" "-S" "." "run")
-;;              :directory directory
-;;              :name 'qlot
-;;              :env (list (concat "PATH="
-;;                                 (mapconcat 'identity exec-path ":"))
-;;                         (concat "QUICKLISP_HOME="
-;;                                 (file-name-as-directory directory) "quicklisp/"))))
-
-;; (defun sly-qlot-exec (directory)
-;;   (interactive (list (read-directory-name "Project directory: ")))
-;;   (sly-start :program "qlot"
-;;              :program-args '("exec" "--with-client" "ros" "-S" "." "run")
-;;              :directory directory
-;;              :name 'qlot
-;;              :env (list (concat "PATH=" (mapconcat 'identity exec-path ":")))))
-
-;; Spacemacs-like auto-paren skipping
-;; (defun smart-closing-parenthesis ()
-;;   (interactive)
-;;   (let* ((sp-navigate-close-if-unbalanced t)
-;;          (current-pos (point))
-;;          (current-line (line-number-at-pos current-pos))
-;;          (next-pos (save-excursion
-;;                      (sp-up-sexp)
-;;                      (point)))
-;;          (next-line (line-number-at-pos next-pos)))
-;;     (cond
-;;      ((and (= current-line next-line)
-;;            (not (= current-pos next-pos)))
-;;       (sp-up-sexp))
-;;      (t
-;;       (insert-char ?\))))))
-;; (after! rustic
-;;   (map! :i
-;;         :mode 'rustic-mode
-;;         ")" #'smart-closing-parenthesis))
-;; (define-key! evil-insert-state-map ")" 'smart-closing-parenthesis)
-
-;; (add-to-list 'company-backends #'company-tabnine)
-;; Default value: company-capf
-;; (setq! +lsp-company-backends '(company-tabnine company-capf))
 
 (after! sly
   (map!
@@ -158,22 +105,9 @@
           (abcl ("clpm" "bundle" "exec" "--with-client" "abcl"))
           (ccl ("clpm" "bundle" "exec" "--with-client" "ccl"))
           (ecl ("clpm" "bundle" "exec" "--with-client" "ecl"))))
-        ;; (eql5 ("clpm" "bundle" "exec" "--with-client" ,(expand-file-name (concat doom-private-dir "eql5-slime.sh"))))
-        ;; (eql5 ("eql5"))
   (setq sly-default-lisp 'sbcl))
 
-
-  ;; (setq company-show-numbers t)
-
-;; We need this fix for some reason
-;; (unless (fboundp 'cc-bytecomp-is-compiling)
-;;   (defsubst cc-bytecomp-is-compiling ()
-;;     "Return non-nil if eval'ed during compilation."
-;;     (eq (cc-bytecomp-compiling-or-loading) 'compiling)))
-
 (setq-default fill-column 120)
-
-;; (setq +lookup-open-url-fn #'eww)
 
 (after! dash-docs
   (setq dash-docs-docsets-path "~/.local/share/Zeal/Zeal/docsets/"
@@ -187,7 +121,7 @@
 ;;   :after magit
 ;;   :hook (magit-mode . magit-delta-mode))
 
- 
+
 
 (after! lsp-mode
   (setq lsp-enable-folding t
@@ -220,11 +154,6 @@
 (after! rustic
   (add-hook 'rustic-mode-hook #'lsp-rust-analyzer-inlay-hints-mode))
 
-
-;; (after! ccls
-;;   (setq! ccls-initialization-options '(:index (:comments 2 :onChange t :trackDependency 2) :completion (:detailedLabel t)))
-;;   (set-lsp-priority! 'ccls 2)) ; optional as ccls is the default in Doom
-
 (after! lsp-clangd
   (setq lsp-clients-clangd-args '("-j=3"
                                   "--background-index"
@@ -233,6 +162,7 @@
                                   "--header-insertion=never"
                                   "--header-insertion-decorators=0"))
   (set-lsp-priority! 'clangd 2))
+
 (after! lsp-lua
   (setq lsp-clients-lua-language-server-install-dir "/usr/lib/lua-language-server"
         lsp-clients-lua-language-server-bin "/usr/bin/lua-language-server"
@@ -242,21 +172,6 @@
   '(aw-leading-char-face
     :foreground "white" :background "red"
     :weight bold :height 2.5 :box (:line-width 10 :color "red")))
-
-;; (defun load-environment-secrets-from-file (file)
-;;   "Load secrets from a shell profile file in the format `export MY_SECRET=123abc...` into the current environment"
-;;   (let* ((context (epg-make-context 'OpenPGP))
-;;          (file-contents
-;;           (decode-coding-string
-;;            (epg-decrypt-file context file nil)
-;;            'utf-8))
-;;          (declarations (split-string file-contents "\n" t)))
-;;     (dolist (declaration declarations)
-;;       (when (string-match "export \\([_[:alnum:]]+\\)=\\(.+\\)" declaration)
-;;         (setenv (match-string 1 declaration) (match-string 2 declaration))))))
-
-;; (dolist (file (file-expand-wildcards (concat (getenv "HOME") "/.secrets/*")))
-;;   (load-environment-secrets-from-file file))
 
 (after! fuel-mode
   (setq fuel-factor-root-dir "/usr/lib/factor"))
@@ -270,14 +185,6 @@
   (setq org-latex-compiler "lualatex"))
 
 ;; (use-package! ox-moderncv)
-  
-
-;; (after! lsp-mode
-;;   (add-to-list 'lsp-language-id-configuration '(marko-mode . "marko"))
-;;   (lsp-register-client
-;;    (make-lsp-client :new-connection (lsp-stdio-connection '("marko-language-server" "--stdio"))
-;;                     :activation-fn (lsp-activate-on "marko")
-;;                     :server-id 'marko-language-server)))
 
 (after! iedit
   (map! "C-:" 'iedit-mode))
@@ -318,7 +225,6 @@
 ;;   ;;       :ni "<escape>" #'symex-mode-interface)
 ;;   )
 
-;; (setq-hook! 'typescript-mode-hook +format-with-lsp nil)
 (use-package! lsp-volar
   :config
   (setq lsp-volar-typescript-suggest-auto-imports t
@@ -340,11 +246,7 @@
 ;;         ;; vertico-posframe-height vertico-count
 ;;         vertico-posframe-poshandler #'posframe-poshandler-frame-top-center)
 ;;   (vertico-posframe-mode))
-  ;; (add-hook 'vertico-posframe-mode-hook #'solaire-mode-fix-minibuffer)
-
-
-;; vertico-posframe-parameters
-;; `((background-color . ,(doom-color 'bg-alt))))))
+;; (add-hook 'vertico-posframe-mode-hook #'solaire-mode-fix-minibuffer)
 
 (after! fish-mode
   (set-company-backend! 'fish-mode 'company-fish-shell 'company-yasnippet))
@@ -363,11 +265,7 @@
 
 (after! web-mode
   (setq web-mode-enable-comment-annotation t))
-  ;; (add-to-list 'web-mode-comment-formats '("vue"        . "//\n "))
-  ;; (add-to-list 'web-mode-comment-formats '("pug"        . "//\n ")))
 
-;; (after! lsp-javascript
-;;   (set-lsp-priority! 'ts-ls 2))
 (use-package! evil-textobj-tree-sitter
   :when (featurep! :editor evil)
   :after tree-sitter
@@ -390,12 +288,14 @@
 (after! emacs-everywhere
   (remove-hook 'emacs-everywhere-init-hooks #'hide-mode-line-mode))
 
-  ;; Semi-center it over the target window, rather than at the cursor position
-  ;; (which could be anywhere).
-  ;; (defadvice! center-emacs-everywhere-in-origin-window (frame window-info)
-  ;;   :override #'emacs-everywhere-set-frame-position
-  ;;   (cl-destructuring-bind (x y width height)
-  ;;       (emacs-everywhere-window-geometry window-info)
-  ;;     (set-frame-position frame
-  ;;                         (+ x (/ width 2) (- (/ width 2)))
-  ;;                         (+ y (/ height 2))))))
+;; Semi-center it over the target window, rather than at the cursor position
+;; (which could be anywhere).
+;; (defadvice! center-emacs-everywhere-in-origin-window (frame window-info)
+;;   :override #'emacs-everywhere-set-frame-position
+;;   (cl-destructuring-bind (x y width height)
+;;       (emacs-everywhere-window-geometry window-info)
+;;     (set-frame-position frame
+;;                         (+ x (/ width 2) (- (/ width 2)))
+;;                         (+ y (/ height 2))))))
+
+(setq +format-with-lsp nil)
