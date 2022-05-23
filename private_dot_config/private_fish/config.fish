@@ -27,6 +27,7 @@ if status is-interactive
     set -gx MCFLY_FUZZY 2
     set -gx MCFLY_RESULTS 50
     command -q zoxide && zoxide init fish | source
+    command -q mcfly && mcfly init fish | source
 
     # tabtab source for packages
     # uninstall by removing this line

@@ -7,7 +7,8 @@
  '(package-selected-packages
    '(oauth2-request ansi package-build shut-up epl git commander sly-quicklisp sly-asdf))
  '(safe-local-variable-values
-   '((eval lexical-let
+   '((lsp-volar-take-over-mode)
+     (eval lexical-let
            ((project-directory
              (car
               (dir-locals-find-file default-directory))))
@@ -97,7 +98,7 @@
       (sql-user "ohmree")
       (sql-database "frick-dmca")
       (sql-server "localhost"))))
- '(warning-suppress-types '((iedit))))
+ '(warning-suppress-types '((lsp-on-idle-hook) (iedit))))
 (custom-set-faces
  ;; custom-set-faces was added by Custom.
  ;; If you edit it by hand, you could mess it up, so be careful.

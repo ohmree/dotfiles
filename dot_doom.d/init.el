@@ -88,6 +88,7 @@
 
        :tools
        ;;ansible
+       chezmoi
        (debugger +lsp)          ; FIXME stepping through code, to help you add bugs
        direnv
        (docker +lsp)
@@ -132,7 +133,7 @@
        ;;faust             ; dsp, but you get to keep your soul
        ;; (fsharp +lsp)            ; ML stands for Microsoft's Language
        ;;fstar             ; (dependent) types and (monadic) effects and Z3
-       ;; graphql
+       (graphql +lsp)
        (gdscript +lsp)          ; the language you waited for
        ;;(go +lsp)         ; the hipster dialect
        ;;(haskell +dante)  ; a language that's lazier than I am
@@ -153,12 +154,12 @@
        ;;nim               ; python + lisp at the speed of c
        ;;nix               ; I hereby declare "nix geht mehr!"
        (ocaml +lsp)             ; an objective camel
-       (org +pretty +dragndrop)               ; organize your plain life in plain text
+       (org +dragndrop)               ; organize your plain life in plain text
        ;;php               ; perl's insecure younger brother
        ;;plantuml          ; diagrams for confusing people more
        (prisma +lsp)
        ;;purescript        ; javascript, but functional
-       ;;python            ; beautiful is better than ugly
+       (python +lsp +pyright +poetry)            ; beautiful is better than ugly
        qt                ; the 'cutest' gui framework ever
        ;; (racket +xp)            ; a DSL for DSLs
        ;; raku              ; the artist formerly known as perl6

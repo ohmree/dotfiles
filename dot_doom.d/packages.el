@@ -82,7 +82,7 @@
 
 ;; (package! crdt)
 ;; (package! symex)
-(package! lsp-volar :recipe (:host github :repo "jadestrong/lsp-volar"))
+;; (package! lsp-volar :recipe (:host github :repo "jadestrong/lsp-volar"))
 ;; (package! vterm
 ;;   :pin "a940dd2ee8a82684860e320c0f6d5e15d31d916f")
 
@@ -98,3 +98,10 @@
   ;;            :files (:defaults "queries")))
 
 ;; (package! magit-gitflow :disable t)
+(unpin! lsp-mode json-mode)
+
+(package! org-modern)
+;; (package! multi-vterm)
+
+(package! polymode)
+(package! poly-astro :recipe (:host github :repo "pablo-abc/poly-astro" :branch "main"))

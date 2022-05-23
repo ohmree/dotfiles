@@ -3,6 +3,8 @@
 ;; Place your private configuration here! Remember, you do not need to run 'doom
 ;; sync' after modifying this file!
 
+(use-package! auth-source)
+
 (use-package! elcord
   :config
   (setq
@@ -154,14 +156,14 @@
 (after! rustic
   (add-hook 'rustic-mode-hook #'lsp-rust-analyzer-inlay-hints-mode))
 
-(after! lsp-clangd
-  (setq lsp-clients-clangd-args '("-j=3"
-                                  "--background-index"
-                                  "--clang-tidy"
-                                  "--completion-style=detailed"
-                                  "--header-insertion=never"
-                                  "--header-insertion-decorators=0"))
-  (set-lsp-priority! 'clangd 2))
+;; (after! lsp-clangd
+;;   (setq lsp-clients-clangd-args '("-j=3"
+;;                                   "--background-index"
+;;                                   "--clang-tidy"
+;;                                   "--completion-style=detailed"
+;;                                   "--header-insertion=never"
+;;                                   "--header-insertion-decorators=0"))
+;;   (set-lsp-priority! 'clangd 2))
 
 (after! lsp-lua
   (setq lsp-clients-lua-language-server-install-dir "/usr/lib/lua-language-server"
@@ -225,10 +227,11 @@
 ;;   ;;       :ni "<escape>" #'symex-mode-interface)
 ;;   )
 
-(use-package! lsp-volar
-  :config
-  (setq lsp-volar-typescript-suggest-auto-imports t
-        lsp-volar-take-over-mode nil))
+;; (after! lsp-volar
+;;   (setq lsp-volar-take-over-mode nil))
+
+(after! lsp-eslint
+  (setq lsp-eslint-package-manager "pnpm"))
 
 (after! cc-mode
   (set-docsets! 'c++-mode :add "Qt_5"))
@@ -266,6 +269,9 @@
 (after! web-mode
   (setq web-mode-enable-comment-annotation t))
 
+(setq-hook! '(typescript-mode-hook rjsx-mode-hook)
+  +format-with-lsp nil)
+
 (use-package! evil-textobj-tree-sitter
   :when (featurep! :editor evil)
   :after tree-sitter
@@ -298,4 +304,114 @@
 ;;                         (+ x (/ width 2) (- (/ width 2)))
 ;;                         (+ y (/ height 2))))))
 
-(setq +format-with-lsp nil)
+(after! json-mode
+  (add-to-list 'auto-mode-alist '("\\(?:\\(?:tsconfig\\(?:\\.[^.]+\\)?\\.json\\)\\|\\(?:\\.vscode/.+\\.json\\)\\)\\'" . jsonc-mode)))
+
+(after! grip-mode
+  (setq grip-preview-use-webkit nil)
+  (let* ((user "ohmree")
+         (credential
+          (car
+           (auth-source-search
+            :host "api.github.com"
+            :user (format "%s^grip" user))))
+         (token (plist-get credential :secret)))
+    (setq grip-github-user user
+          grip-github-password (funcall token))))
+
+(after! doom-modeline
+  (setq doom-modeline-github t
+        doom-modeline-enable-word-count t
+        doom-modeline-hud t
+        doom-modeline-major-mode-icon t))
+
+;; Fix `lsp-volar' warning.
+(defadvice! +lsp--create-filter-function (workspace)
+  :override #'lsp--create-filter-function
+  (let ((body-received 0)
+        leftovers body-length body chunk)
+    (lambda (_proc input)
+      (setf chunk (if (s-blank? leftovers)
+                      input
+                    (concat leftovers input)))
+
+      (let (messages)
+        (while (not (s-blank? chunk))
+          (if (not body-length)
+              ;; Read headers
+              (if-let ((body-sep-pos (string-match-p "\r\n\r\n" chunk)))
+                  ;; We've got all the headers, handle them all at once:
+                  (setf body-length (lsp--get-body-length
+                                     (mapcar #'lsp--parse-header
+                                             (split-string
+                                              (substring-no-properties chunk
+                                                                       (or (string-match-p "Content-Length" chunk)
+                                                                           (error "Unable to find Content-Length header."))
+                                                                       body-sep-pos)
+                                              "\r\n")))
+                        body-received 0
+                        leftovers nil
+                        chunk (substring-no-properties chunk (+ body-sep-pos 4)))
+
+                ;; Haven't found the end of the headers yet. Save everything
+                ;; for when the next chunk arrives and await further input.
+                (setf leftovers chunk
+                      chunk nil))
+            (let* ((chunk-length (string-bytes chunk))
+                   (left-to-receive (- body-length body-received))
+                   (this-body (if (< left-to-receive chunk-length)
+                                  (prog1 (substring-no-properties chunk 0 left-to-receive)
+                                    (setf chunk (substring-no-properties chunk left-to-receive)))
+                                (prog1 chunk
+                                  (setf chunk nil))))
+                   (body-bytes (string-bytes this-body)))
+              (push this-body body)
+              (setf body-received (+ body-received body-bytes))
+              (when (>= chunk-length left-to-receive)
+                (condition-case err
+                    (with-temp-buffer
+                      (apply #'insert
+                             (nreverse
+                              (prog1 body
+                                (setf leftovers nil
+                                      body-length nil
+                                      body-received nil
+                                      body nil))))
+                      (decode-coding-region (point-min)
+                                            (point-max)
+                                            'utf-8)
+                      (goto-char (point-min))
+                      (while (search-forward "\\u0000" nil t)
+                        (replace-match "" nil t))
+                      (goto-char (point-min))
+                      (push (lsp-json-read-buffer) messages))
+
+                  (error
+                   (lsp-warn "Failed to parse the following chunk:\n'''\n%s\n'''\nwith message %s"
+                             (concat leftovers input)
+                             err)))))))
+        (mapc (lambda (msg)
+                (lsp--parser-on-message msg workspace))
+              (nreverse messages))))))
+
+(use-package! org-modern
+  :after org
+  :config
+  (add-hook 'org-mode-hook #'org-modern-mode))
+
+;; (use-package! multi-vterm
+;;   :after vterm
+;;   :config
+;;   (map! :map vterm-mode-map
+;;         :n ", c" 'multi-vterm
+;;         :n ", n" 'multi-vterm-next
+;;         :n ", p" 'multi-vterm-prev))
+
+(after! lsp-javascript
+  (setq lsp-clients-typescript-log-verbosity "off"))
+
+;; (use-package! polymode)
+(use-package! poly-astro
+  :mode ("\\.astro\\'" . poly-astro)
+  :defer-incrementally polymode
+  :after polymode)
